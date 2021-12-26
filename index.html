@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- コンテンツ表示画面 -->
+    <div>
+        <div>
+            名前：<input type="text" id="uname">
+        </div>
+        <div>
+            <textarea id="text" cols="30" rows="10"></textarea>
+            <button id="send">送信</button>
+        </div>
+        <div id="output" style="overflow: auto;height: 300px;"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved } 
+        from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAM5hKL89ZxZc8ZsTqvJaDvAq0hOgXMCcM",
+          authDomain: "gsdemo-e3727.firebaseapp.com",
+          projectId: "gsdemo-e3727",
+          storageBucket: "gsdemo-e3727.appspot.com",
+          messagingSenderId: "204802093329",
+          appId: "1:204802093329:web:086a7edd54e6adc437dcb0"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app); //RealtimeDBに接続
+        const dbRef = ref(db,"chat"); //RealtimeDB内の"chat"を使う
+ 
+        // データ登録
+        $("#send").on("click", function() {
+            const msg = {
+                uname: $("#uname").val(),
+                text: $("#text").val()
+            }
+            const newPostRef = push(dbRef);
+            console.log(newPostRef, "newPostRef");
+            set(newPostRef, msg);
+
+        });
+
+      //エンターキーでデータ登録(授業テキストと山﨑先生のyoutube)
+      $("#text").on("keydown", function (e) {
+        console.log(e); //e変数の中身を確認！！
+        if (e.keyCode == 13) {
+          //エンターキーは　13
+          const msg = {
+            uname: $("#uname").val(),
+            text: $("#text").val(),
+          };
+          const newPostRef = push(dbRef); //ユニークKEYを生成
+          set(newPostRef, msg); //"chat"にユニークKEYをつけてオブジェクトデータを登録
+        }
+      });
+
+
+        // 送信処理
+        // $("#send").on("click", function() {
+        //     const text = $("#text").val();
+        //     const uname = $("#uname").val();
+        //     alert(uname+text);
+        // });        
+
+        // データ受信（dataという名前で返し、dataを取得し、その中のkeyにアクセスする）
+        onChildAdded(dbRef, function(data){
+
+            const msg = data.val();
+            const key = data.key;
+            let h = '<P>';
+                h += msg.uname;
+                h += '<br>';
+                h += msg.text;
+                h += '</p>';
+                $("#output").append(h);
+        });
+
+
+      </script>     
+</body>
+</html>
